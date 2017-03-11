@@ -1,4 +1,4 @@
-package datadump
+package bufferedwriter
 
 import (
 	"bytes"
