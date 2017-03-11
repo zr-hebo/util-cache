@@ -1,6 +1,5 @@
 # bufferedwriter
-一个golang实现的能够对写文件操作进行缓存的操作
-
+一个golang实现的能够对写文件进行缓存写操作的包，写的内容先放在缓存中，等缓存满了的时候再写入到文件。
 # Install
 
 Use go get to install this package:<br>
