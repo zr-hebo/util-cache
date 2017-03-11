@@ -1,0 +1,2 @@
+# bufferedwriter
+一个golang实现的能够对写文件操作进行缓存的操作
