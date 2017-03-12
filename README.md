@@ -14,7 +14,7 @@ $ go get github.com/zr-hebo/bufferedwriter
 	// 创建带缓存的Writer，file是打开的文件，bufferSize是缓存的大小
 	writer, err := bfw.NewBufferedWriter(file, bufferSize)
 	if err != nil {
-	return
+		return
 	}
   
 	// 将byte数组写入writer	
