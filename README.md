@@ -3,17 +3,17 @@
 # Install
 
 Use go get to install this package:<br>
-$ go get github.com/zr-hebo/bufferedwriter
+$ go get github.com/zr-hebo/util-cache
 
 # Usage
 
 ```golang
 import (
-	bfw "github.com/zr-hebo/bufferedwriter"
+	cu "github.com/zr-hebo/util-cache"
 )
 
 // 创建带缓存的Writer，file是打开的文件，bufferSize是缓存的大小
-writer, err := bfw.NewBufferedWriter(file, bufferSize)
+writer, err := cu.NewBufferedWriter(file, bufferSize)
 if err != nil {
 	return
 }
