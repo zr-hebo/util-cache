@@ -1,11 +1,13 @@
-# bufferedwriter
-一个golang实现的能够对写文件进行缓存写操作的包，写的内容先放在缓存中，等缓存满了的时候再写入到文件。
-# Install
+一个golang实现的处理缓存的包  
+
+### bufferedwriter
+，写的内容先放在缓存中，等缓存满了的时候再写入到文件。
+#### Install
 
 Use go get to install this package:<br>
 $ go get github.com/zr-hebo/util-cache
 
-# Usage
+#### Usage
 
 ```golang
 import (
