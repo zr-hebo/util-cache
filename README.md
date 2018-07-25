@@ -1,7 +1,7 @@
 一个golang实现的处理缓存的包  
 
 ### bufferedwriter
-，写的内容先放在缓存中，等缓存满了的时候再写入到文件。
+ 写文件时，为了提高性能，写的内容先放在缓存中，等缓存满了的时候再写入到文件。
 #### Install
 
 Use go get to install this package:<br>
