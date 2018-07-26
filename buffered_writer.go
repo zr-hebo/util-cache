@@ -1,4 +1,4 @@
-package bufferedwriter
+package cache
 
 import (
 	"bytes"

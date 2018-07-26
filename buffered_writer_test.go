@@ -1,13 +1,17 @@
-package bufferedwriter
+package cache
 
 import (
 	"os"
 	"testing"
 )
 
+const (
+	fileName = "test.txt"
+)
+
 func Test_Writer(t *testing.T) {
 	bufferSize := 1024 * 1024 * 5
-	file, err := os.Create("test.txt")
+	file, err := os.Create(fileName)
 	if err != nil {
 		t.Log(err.Error())
 	}
@@ -32,6 +36,11 @@ func Test_Writer(t *testing.T) {
 	}
 
 	if err = writer.WaitClean(); err != nil {
+		t.Log(err.Error())
+		return
+	}
+
+	if err = os.Remove(fileName); err != nil {
 		t.Log(err.Error())
 		return
 	}
