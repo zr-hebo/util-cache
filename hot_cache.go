@@ -45,11 +45,11 @@ func NewLRUCache(num, keepSeconds int) (rc *LRUCache) {
 
 func (r *Record) String() string {
 	return fmt.Sprintf(
-		"key:%s, last visit time:%s", r.key.Value,
-		r.lastVisitTime.Format("%Y-%m-%d %H:%M:%S"))
+		"key:%v, last visit time:%s", r.key.Value,
+		r.lastVisitTime.Format("2006-01-02 15:04:05"))
 }
 
-func (lc *LRUCache) String() string {
+func (lc LRUCache) String() string {
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "there are %d record in LRU cache. ", lc.keyOrder.Len())
 	for _, record := range lc.contents {
