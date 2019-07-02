@@ -11,9 +11,15 @@ import (
 // Key key
 type Key interface{}
 
+func (r *Record) String() string {
+	return fmt.Sprintf(
+		"key:%v, last visit time:%s", r.listIdx.Value,
+		r.lastVisitTime.Format("2006-01-02 15:04:05"))
+}
+
 // Record record
 type Record struct {
-	key           *list.Element
+	listIdx           *list.Element
 	val           interface{}
 	lastVisitTime time.Time
 }
@@ -25,11 +31,11 @@ type LRUCache struct {
 	lock        *sync.Mutex
 	keyOrder    *list.List
 	contents    map[Key]*Record
-	keepSeconds int
+	timeoutInSeconds int
 }
 
 // NewLRUCache create LRUCache instance
-func NewLRUCache(num, keepSeconds int) (rc *LRUCache) {
+func NewLRUCache(num, timeoutInSeconds int) (rc *LRUCache) {
 	if num < 1 {
 		num = 0
 	}
@@ -39,15 +45,10 @@ func NewLRUCache(num, keepSeconds int) (rc *LRUCache) {
 		lock:        &sync.Mutex{},
 		keyOrder:    list.New(),
 		contents:    make(map[Key]*Record),
-		keepSeconds: keepSeconds,
+		timeoutInSeconds: timeoutInSeconds,
 	}
 }
 
-func (r *Record) String() string {
-	return fmt.Sprintf(
-		"key:%v, last visit time:%s", r.key.Value,
-		r.lastVisitTime.Format("2006-01-02 15:04:05"))
-}
 
 func (lc LRUCache) String() string {
 	var buf bytes.Buffer
@@ -68,19 +69,19 @@ func (lc *LRUCache) Set(key, val interface{}) {
 	if ok {
 		// update value in element
 		record.val = val
-		lc.keyOrder.MoveToBack(record.key)
+		lc.keyOrder.MoveToFront(record.listIdx)
 
 	} else {
 		// add new element
 		if lc.keyOrder.Len() >= lc.maxNum {
-			leastUsedElement := lc.keyOrder.Front()
+			leastUsedElement := lc.keyOrder.Back()
+			delete(lc.contents, key)
 			lc.keyOrder.Remove(leastUsedElement)
-			delete(lc.contents, leastUsedElement.Value)
 		}
 
 		record = new(Record)
 		record.val = val
-		record.key = lc.keyOrder.PushBack(key)
+		record.listIdx = lc.keyOrder.PushFront(key)
 		lc.contents[key] = record
 	}
 
@@ -89,13 +90,6 @@ func (lc *LRUCache) Set(key, val interface{}) {
 
 // Get get value by key
 func (lc *LRUCache) Get(key interface{}) (val interface{}) {
-	isExpired := false
-	defer func() {
-		if isExpired {
-			lc.Remove(key)
-		}
-	}()
-
 	lc.lock.Lock()
 	defer lc.lock.Unlock()
 
@@ -103,18 +97,21 @@ func (lc *LRUCache) Get(key interface{}) (val interface{}) {
 	if ok {
 		// check if is expired record
 		now := time.Now()
-		behindSeconds := time.Second * time.Duration(lc.keepSeconds)
+		behindSeconds := time.Second * time.Duration(lc.timeoutInSeconds)
 		if now.After(record.lastVisitTime.Add(behindSeconds)) {
-			isExpired = true
-			return
-		}
+			lc.keyOrder.Remove(record.listIdx)
+			delete(lc.contents, key)
+			return nil
 
-		// reorder key position
-		lc.keyOrder.PushBack(record.key)
-		val = record.val
-		record.lastVisitTime = time.Now()
+		} else {
+			// reorder key position
+			lc.keyOrder.PushFront(key)
+			val = record.val
+			record.lastVisitTime = now
+			return val
+		}
 	}
-	return
+	return nil
 }
 
 // Remove remove value by key
@@ -124,7 +121,7 @@ func (lc *LRUCache) Remove(key interface{}) (val interface{}) {
 
 	record, ok := lc.contents[key]
 	if ok {
-		lc.keyOrder.Remove(record.key)
+		lc.keyOrder.Remove(record.listIdx)
 		delete(lc.contents, key)
 	}
 	return
