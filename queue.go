@@ -8,6 +8,7 @@ import (
 type node struct {
 	value interface{}
 	next  *node
+	pre  *node
 }
 
 type LinkedQueue struct {
@@ -28,10 +29,12 @@ func (lq *LinkedQueue) Enqueue(val interface{}) {
 	lq.mutex.Lock()
 	defer lq.mutex.Unlock()
 
-	node := node{
+	newNode := &node{
 		value: val,
 		next:  lq.head,
 	}
+	newNode.next = lq.head.next
+	lq.head.next = newNode
 
 	lq.size = lq.size + 1
 }
