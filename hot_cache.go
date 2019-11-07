@@ -19,7 +19,7 @@ func (r *Record) String() string {
 
 // Record record
 type Record struct {
-	listIdx           *list.Element
+	listIdx       *list.Element
 	val           interface{}
 	lastVisitTime time.Time
 }
@@ -27,10 +27,10 @@ type Record struct {
 // LRUCache lru cache
 type LRUCache struct {
 	// maxNum is the maximum number of cache entries before
-	maxNum      int
-	lock        *sync.Mutex
-	keyOrder    *list.List
-	contents    map[Key]*Record
+	maxNum           int
+	lock             *sync.RWMutex
+	keyOrder         *list.List
+	contents         map[Key]*Record
 	timeoutInSeconds int
 }
 
@@ -41,14 +41,13 @@ func NewLRUCache(num, timeoutInSeconds int) (rc *LRUCache) {
 	}
 
 	return &LRUCache{
-		maxNum:      num,
-		lock:        &sync.Mutex{},
-		keyOrder:    list.New(),
-		contents:    make(map[Key]*Record),
+		maxNum:           num,
+		lock:             &sync.RWMutex{},
+		keyOrder:         list.New(),
+		contents:         make(map[Key]*Record),
 		timeoutInSeconds: timeoutInSeconds,
 	}
 }
-
 
 func (lc LRUCache) String() string {
 	var buf bytes.Buffer
@@ -90,8 +89,8 @@ func (lc *LRUCache) Set(key, val interface{}) {
 
 // Get get value by key
 func (lc *LRUCache) Get(key interface{}) (val interface{}) {
-	lc.lock.Lock()
-	defer lc.lock.Unlock()
+	lc.lock.RLock()
+	defer lc.lock.RUnlock()
 
 	record, ok := lc.contents[key]
 	if ok {
@@ -102,14 +101,13 @@ func (lc *LRUCache) Get(key interface{}) (val interface{}) {
 			lc.keyOrder.Remove(record.listIdx)
 			delete(lc.contents, key)
 			return nil
-
-		} else {
-			// reorder key position
-			lc.keyOrder.PushFront(key)
-			val = record.val
-			record.lastVisitTime = now
-			return val
 		}
+
+		// reorder key position
+		lc.keyOrder.PushFront(key)
+		val = record.val
+		record.lastVisitTime = now
+		return val
 	}
 	return nil
 }
