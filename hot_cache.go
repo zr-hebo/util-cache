@@ -28,7 +28,7 @@ type Record struct {
 type LRUCache struct {
 	// maxNum is the maximum number of cache entries before
 	maxNum           int
-	lock             *sync.RWMutex
+	lock             *sync.Mutex
 	keyOrder         *list.List
 	contents         map[Key]*Record
 	timeoutInSeconds int
@@ -42,7 +42,7 @@ func NewLRUCache(num, timeoutInSeconds int) (rc *LRUCache) {
 
 	return &LRUCache{
 		maxNum:           num,
-		lock:             &sync.RWMutex{},
+		lock:             &sync.Mutex{},
 		keyOrder:         list.New(),
 		contents:         make(map[Key]*Record),
 		timeoutInSeconds: timeoutInSeconds,
@@ -89,8 +89,8 @@ func (lc *LRUCache) Set(key, val interface{}) {
 
 // Get get value by key
 func (lc *LRUCache) Get(key interface{}) (val interface{}) {
-	lc.lock.RLock()
-	defer lc.lock.RUnlock()
+	lc.lock.Lock()
+	defer lc.lock.Unlock()
 
 	record, ok := lc.contents[key]
 	if ok {
